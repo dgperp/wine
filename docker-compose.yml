@@ -45,32 +45,32 @@ services:
       options:
         max-size: 10m
     tty: true
-#    command: |
-#      bash -c '
-#      if [ -z "$${DATABASES}" ]; then
-#        # If DATABASES is empty, run Odoo normally
-#        exec /entrypoint.sh odoo --logfile /var/log/odoo/odoo-wine-$$(date +%Y-%m-%d).log
-#      else
-#        # Start Odoo initially
-#        /entrypoint.sh odoo --logfile /var/log/odoo/odoo-wine-$$(date +%Y-%m-%d).log &
-#
-#        # Wait for Odoo to be fully started
-#        sleep 10
-#
-#        # Perform update for each database
-#        IFS="," read -ra DATABASE_ARRAY <<< "$${DATABASES}"
-#        for current_database in "$${DATABASE_ARRAY[@]}"; do
-#          echo "Updating modules for database: $$current_database"
-#          odoo -d "$$current_database" -u "$${MODULES}" --db_password="$${POSTGRES_PASSWORD}" --stop-after-init --logfile /var/log/odoo/odoo-wine-update-$$(date +%Y-%m-%d).log
-#        done
-#
-#        # Kill the initial Odoo process
-#        pkill -f "/usr/bin/python3 /usr/bin/odoo"
-#
-#        # Start Odoo again
-#        exec /entrypoint.sh odoo --logfile /var/log/odoo/odoo-wine-$$(date +%Y-%m-%d).log
-#      fi
-#      '
+    command: |
+      bash -c '
+      if [ -z "$${DATABASES}" ]; then
+        # If DATABASES is empty, run Odoo normally
+        exec /entrypoint.sh odoo --logfile /var/log/odoo/odoo-wine-$$(date +%Y-%m-%d).log
+      else
+        # Start Odoo initially
+        /entrypoint.sh odoo --logfile /var/log/odoo/odoo-wine-$$(date +%Y-%m-%d).log &
+
+        # Wait for Odoo to be fully started
+        sleep 10
+
+        # Perform update for each database
+        IFS="," read -ra DATABASE_ARRAY <<< "$${DATABASES}"
+        for current_database in "$${DATABASE_ARRAY[@]}"; do
+          echo "Updating modules for database: $$current_database"
+          odoo -d "$$current_database" -u "$${MODULES}" --db_password="$${POSTGRES_PASSWORD}" --stop-after-init --logfile /var/log/odoo/odoo-wine-update-$$(date +%Y-%m-%d).log
+        done
+
+        # Kill the initial Odoo process
+        pkill -f "/usr/bin/python3 /usr/bin/odoo"
+
+        # Start Odoo again
+        exec /entrypoint.sh odoo --logfile /var/log/odoo/odoo-wine-$$(date +%Y-%m-%d).log
+      fi
+      '
 
   db_wine:
     image: postgres:17
@@ -84,7 +84,6 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-odoo}
     volumes:
       - db-data:/var/lib/postgresql/data
-      - ./conf/postgresql.conf:/etc/postgresql/postgresql.conf
     logging:
       options:
         max-size: 10m

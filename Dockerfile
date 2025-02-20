@@ -1,4 +1,4 @@
-FROM digitaltoa/odoo:v18.1
+FROM odoo:18
 
 USER root
 

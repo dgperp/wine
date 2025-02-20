@@ -18,7 +18,7 @@ services:
       - odoo-network
 
   odoo_wine:
-#    platform: linux/amd64 # for run on arm cpu
+    platform: linux/amd64 # for run on arm cpu
     user: root
     build: .
     container_name: odoo_wine

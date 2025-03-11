@@ -73,7 +73,7 @@ services:
       '
 
   db_wine:
-    image: postgres:17
+    image: postgres:15
     container_name: db_wine
     restart: always
     networks:

@@ -1,0 +1,80 @@
+///
+/// This file regroups the variables that style odoo components.
+/// They are available in every asset bundle.
+///
+
+// Font sizes
+$o-font-size-base-touch: 15px;
+
+// Colors
+$o-gray-100: #f6f7fa;
+$o-gray-200: #E0E2E6;
+$o-gray-300: #C9CCD2;
+$o-gray-400: #9DA1AA;
+$o-gray-500: #80848F;
+$o-gray-600: #626774;
+$o-gray-700: #444B5A;
+$o-gray-800: #272E3F;
+$o-gray-900: #091124;
+
+$o-enterprise-color: #b3e0fd;
+$o-enterprise-primary-color: #0091B9;
+
+$o-brand-odoo: #b3e0fd;
+$o-brand-odoo-font: #000000;
+$o-brand-primary: #0091B9;
+$o-brand-primary-font: #FFFFFF;
+$o-brand-secondary: #dce7f2;
+$o-brand-lightsecondary: $o-gray-100;
+
+// .btn-danger {
+//     background-color: #DD5A6D;
+//     border-color: #DD5A6D;
+// }
+
+$o-list-group-header-color: $o-gray-900;
+$o-list-footer-color: $o-gray-900;
+$o-list-footer-bg-color: #eee;
+$o-list-footer-font-weight: 500;
+
+$o-btn-secondary-bg: #d5eaf1;
+$o-btn-secondary-hover-bg: $o-gray-100;
+$o-btn-secondary-hover-border: $o-gray-200;
+
+$o-dropdown-box-shadow: 0 12px 14px -10px rgba(black, 0.25);
+
+$o-border-radius: .25rem;
+$o-border-radius-lg: .3rem;
+$o-border-radius-sm: .2rem;
+
+// o-inputs
+$o-input-padding-y: 1px;
+$o-input-padding-x: 0;
+
+$o-input-border-required: $o-gray-900;
+
+// Home menu
+$o-home-menu-container-size: 850px;
+$o-home-menu-app-icon-max-width: 70px;
+
+// Kanban
+$o-kanban-header-title-height: 50px;
+
+// snackbar
+$o-snackbar-background-color: #FFF;
+$o-snackbar-color: $o-gray-700;
+$o-snackbar-height: $o-kanban-header-title-height;
+$o-snackbar-left: 15px;
+$o-snackbar-right: $o-snackbar-left;
+$o-snackbar-bottom: 20px;
+$o-snackbar-inner-padding: 16px;
+
+// touch
+$o-touch-btn-padding: 7px 14px;
+
+.modal-header {
+    background-color: $o-brand-odoo;
+    h4 {
+        color: $o-brand-odoo-font;
+    }
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <t t-name="base_backend.Throbber" t-inherit="web.Throbber" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('oe_blockui_spin')]" position="replace">
+            <div class="oe_blockui_spin" style="height: 50px">
+                <img src="/web_responsive/static/src/img/runcat.gif" style="animation: fa-spin 1s infinite steps(12);"
+                     alt="Loading..."/>
+            </div>
+        </xpath>
+    </t>
+
+</odoo>

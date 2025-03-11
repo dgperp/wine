@@ -1,154 +1,242 @@
+/** @odoo-module **/
 /* Copyright 2018 Tecnativa - Jairo Llopis
  * Copyright 2021 ITerra - Sergey Shebanin
- * Copyright 2023 Onestein - Anjeel Haria
- * Copyright 2023 Taras Shabaranskyi
- * License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl). */
+ * License OPL-1.0 or later (http://www.gnu.org/licenses/lgpl). */
 
-import {Component, onWillStart, useState} from "@odoo/owl";
-import {useBus, useService} from "@web/core/utils/hooks";
-import {AppMenuItem} from "@web_responsive/components/apps_menu_item/apps_menu_item.esm";
-import {AppsMenuSearchBar} from "@web_responsive/components/menu_searchbar/searchbar.esm";
 import {NavBar} from "@web/webclient/navbar/navbar";
-import {WebClient} from "@web/webclient/webclient";
-import {browser} from "@web/core/browser/browser";
-import {patch} from "@web/core/utils/patch";
-import {router} from "@web/core/browser/router";
-import {session} from "@web/session";
+import {useAutofocus, useBus, useService} from "@web/core/utils/hooks";
 import {useHotkey} from "@web/core/hotkeys/hotkey_hook";
-import {user} from "@web/core/user";
+import {scrollTo} from "@web/core/utils/scrolling";
+import {debounce} from "@web/core/utils/timing";
+import {fuzzyLookup} from "@web/core/utils/search";
+import {WebClient} from "@web/webclient/webclient";
+import {patch} from "web.utils";
 
-/* global document */
-/* global location */
-/* global window */
+const {Component} = owl;
+const {useState, useRef} = owl.hooks;
 
 // Patch WebClient to show AppsMenu instead of default app
-patch(WebClient.prototype, {
+patch(WebClient.prototype, "web_responsive.DefaultAppsMenu", {
     setup() {
-        super.setup();
-
-        useBus(this.env.bus, "APPS_MENU:STATE_CHANGED", ({detail: state}) => {
-            document.body.classList.toggle("o_apps_menu_opened", state);
+        this._super();
+        useBus(this.env.bus, "APPS_MENU:STATE_CHANGED", (payload) => {
+            this.el.classList.toggle("o_apps_menu_opened", payload);
+            this.el.classList.toggle("o_first_app", false);
         });
-        onWillStart(async () => {
-            const is_redirect_home = await this.orm.searchRead(
-                "res.users",
-                [["id", "=", user.userId]],
-                ["is_redirect_home"]
-            );
-            user.updateContext({
-                is_redirect_to_home: is_redirect_home[0]?.is_redirect_home,
-            });
-        });
-        this.redirect = false;
     },
     _loadDefaultApp() {
-        if (user.context.is_redirect_to_home) {
-            this.env.bus.trigger("APPS_MENU:STATE_CHANGED", true);
-        } else {
-            super._loadDefaultApp();
-        }
+        var menu_apps_dropdown = document.querySelector(
+            ".o_navbar_apps_menu .dropdown-toggle"
+        );
+        menu_apps_dropdown.click();
+        this.el.classList.toggle("o_apps_menu_opened", true);
+        this.el.classList.toggle("o_first_app", true);
+        return true;
     },
 });
 
+/**
+ * @extends Dropdown
+ */
 export class AppsMenu extends Component {
     setup() {
         super.setup();
         this.state = useState({open: false});
-        this.theme = session.apps_menu.theme || "milk";
-        this.menuService = useService("menu");
-        browser.localStorage.setItem("redirect_menuId", "");
-
-        if (user.context.is_redirect_to_home) {
-            const menuId = Number(router.current.menu_id || 0);
-            this.state = useState({open: menuId === 0});
-        }
         useBus(this.env.bus, "ACTION_MANAGER:UI-UPDATED", () => {
-            this.setOpenState(false);
+            this.setState(false);
         });
+        useBus(this.env.bus, "APPS_MENU:CLOSE", () => {
+            this.setState(false);
+        });
+    }
+    setState(state) {
+        this.state.open = state;
+        this.env.bus.trigger("APPS_MENU:STATE_CHANGED", state);
+    }
+}
+
+/**
+ * Reduce menu data to a searchable format understandable by fuzzyLookup
+ *
+ * `menuService.getMenuAsTree()` returns array in a format similar to this (only
+ * relevant data is shown):
+ *
+ * ```js
+ * // This is a menu entry:
+ * {
+ *     actionID: 12,       // Or `false`
+ *     name: "Actions",
+ *     childrenTree: {0: {...}, 1: {...}}}, // List of inner menu entries
+ *                                          // in the same format or `undefined`
+ * }
+ * ```
+ *
+ * This format is very hard to process to search matches, and it would
+ * slow down the search algorithm, so we reduce it with this method to be
+ * able to later implement a simpler search.
+ *
+ * @param {Object} memo
+ * Reference to current result object, passed on recursive calls.
+ *
+ * @param {Object} menu
+ * A menu entry, as described above.
+ *
+ * @returns {Object}
+ * Reduced object, without entries that have no action, and with a
+ * format like this:
+ *
+ * ```js
+ * {
+ *  "Discuss": {Menu entry Object},
+ *  "Settings": {Menu entry Object},
+ *  "Settings/Technical/Actions/Actions": {Menu entry Object},
+ *  ...
+ * }
+ * ```
+ */
+function findNames(memo, menu) {
+    if (menu.actionID) {
+        memo[menu.name.trim()] = menu;
+    }
+    if (menu.childrenTree) {
+        const innerMemo = _.reduce(menu.childrenTree, findNames, {});
+        for (const innerKey in innerMemo) {
+            memo[menu.name.trim() + " / " + innerKey] = innerMemo[innerKey];
+        }
+    }
+    return memo;
+}
+
+/**
+ * @extends Component
+ */
+export class AppsMenuSearchBar extends Component {
+    setup() {
+        super.setup();
+        this.state = useState({
+            results: [],
+            offset: 0,
+            hasResults: false,
+        });
+        useAutofocus({selector: "input"});
+        this.searchBarInput = useRef("SearchBarInput");
+        this._searchMenus = debounce(this._searchMenus, 100);
+        // Store menu data in a format searchable by fuzzy.js
+        this._searchableMenus = [];
+        this.menuService = useService("menu");
+        for (const menu of this.menuService.getApps()) {
+            Object.assign(
+                this._searchableMenus,
+                _.reduce([this.menuService.getMenuAsTree(menu.id)], findNames, {})
+            );
+        }
+        // Set up key navigation
         this._setupKeyNavigation();
     }
 
-    setOpenState(open_state) {
-        this.state.open = open_state;
-        this.env.bus.trigger("APPS_MENU:STATE_CHANGED", open_state);
+    willPatch() {
+        // Allow looping on results
+        if (this.state.offset < 0) {
+            this.state.offset = this.state.results.length + this.state.offset;
+        } else if (this.state.offset >= this.state.results.length) {
+            this.state.offset -= this.state.results.length;
+        }
+    }
+
+    patched() {
+        // Scroll to selected element on keyboard navigation
+        if (this.state.results.length) {
+            const listElement = this.el.querySelector(".search-results");
+            const activeElement = this.el.querySelector(".highlight");
+            if (activeElement) {
+                scrollTo(activeElement, listElement);
+            }
+        }
     }
 
     /**
-     * Setup navigation among app menus
+     * Search among available menu items, and render that search.
+     */
+    _searchMenus() {
+        const query = this.searchBarInput.el.value;
+        this.state.hasResults = query !== "";
+        this.state.results = this.state.hasResults
+            ? fuzzyLookup(query, _.keys(this._searchableMenus), (k) => k)
+            : [];
+    }
+
+    /**
+     * Get menu object for a given key.
+     * @param {String} key Full path to requested menu.
+     * @returns {Object} Menu object.
+     */
+    _menuInfo(key) {
+        return this._searchableMenus[key];
+    }
+
+    /**
+     * Setup navigation among search results
      */
     _setupKeyNavigation() {
         const repeatable = {
             allowRepeat: true,
         };
-
-        const keyActions = [
-            {key: "ArrowRight", action: "next"},
-            {key: "ArrowLeft", action: "prev"},
-            {key: "ArrowDown", action: "next"},
-            {key: "ArrowUp", action: "prev"},
-        ];
-
-        keyActions.forEach(({key, action}) => {
-            useHotkey(
-                key,
-                () => {
-                    this._onWindowKeydown(action);
-                },
-                repeatable
-            );
-        });
-
-        useHotkey("Escape", () => {
-            this.env.bus.trigger("ACTION_MANAGER:UI-UPDATED");
-        });
-    }
-
-    _onWindowKeydown(direction) {
-        const focusableInputElements = Array.from(
-            document.querySelectorAll(".o-app-menu-item")
+        useHotkey(
+            "ArrowDown",
+            () => {
+                this.state.offset++;
+            },
+            repeatable
         );
-        const currentIndex = focusableInputElements.indexOf(document.activeElement);
-
-        if (focusableInputElements.length) {
-            const lastIndex = focusableInputElements.length - 1;
-
-            let nextIndex = 0;
-            if (direction === "next") {
-                nextIndex = currentIndex < lastIndex ? currentIndex + 1 : 0;
-            } else if (direction === "prev") {
-                nextIndex = currentIndex > 0 ? currentIndex - 1 : lastIndex;
+        useHotkey(
+            "ArrowUp",
+            () => {
+                this.state.offset--;
+            },
+            repeatable
+        );
+        useHotkey(
+            "Tab",
+            () => {
+                this.state.offset++;
+            },
+            repeatable
+        );
+        useHotkey(
+            "Shift+Tab",
+            () => {
+                this.state.offset--;
+            },
+            repeatable
+        );
+        useHotkey("Home", () => {
+            this.state.offset = 0;
+        });
+        useHotkey("End", () => {
+            this.state.offset = this.state.results.length - 1;
+        });
+        useHotkey("Enter", () => {
+            if (this.state.results.length) {
+                this.el.querySelector(".highlight").click();
             }
-
-            focusableInputElements[nextIndex].focus();
-        }
+        });
     }
 
-    onMenuClick() {
-        const isRedirect = user.context.is_redirect_to_home;
-        const redirectMenuId = browser.localStorage.getItem("redirect_menuId") || "";
-        const {href, hash} = location;
-
-        if (isRedirect) {
-            const shouldOpenState = !redirectMenuId || !this.state.open;
-            this.setOpenState(shouldOpenState);
-
-            const currentMenuId = router.current.menu_id;
-            if (currentMenuId && currentMenuId !== redirectMenuId) {
-                browser.localStorage.setItem("redirect_menuId", currentMenuId);
+    _onKeyDown(ev) {
+        if (ev.code === "Escape") {
+            ev.stopPropagation();
+            ev.preventDefault();
+            const query = this.searchBarInput.el.value;
+            if (query) {
+                this.searchBarInput.el.value = "";
+                this.state.results = [];
+                this.state.hasResults = false;
+            } else {
+                this.env.bus.trigger("ACTION_MANAGER:UI-UPDATED");
             }
-
-            if (href.includes(hash)) {
-                window.history.replaceState(null, "", href.replace(hash, ""));
-            }
-        } else {
-            this.setOpenState(!this.state.open);
         }
     }
 }
-
 AppsMenu.template = "web_responsive.AppsMenu";
-AppsMenu.props = {
-    slots: {type: Object, optional: true},
-};
-
-Object.assign(NavBar.components, {AppsMenu, AppMenuItem, AppsMenuSearchBar});
+AppsMenuSearchBar.template = "web_responsive.AppsMenuSearchResults";
+Object.assign(NavBar.components, {AppsMenu, AppsMenuSearchBar});

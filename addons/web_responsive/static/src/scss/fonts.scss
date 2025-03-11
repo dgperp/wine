@@ -1,0 +1,43 @@
+$font-path: '../fonts/';
+
+$o-theme-font-configs: (
+    'Roboto': (),
+    'Open Sans': (),
+    'Source Sans Pro': (),
+    'Raleway': (),
+    'Noto Serif': (),
+    'Arvo': (),
+);
+
+@mixin font($family, $type, $weight, $style) {
+    @font-face {
+        font-family: $family;
+        src: url('#{$font-path}/#{$family}/#{$family}-#{$type}.ttf') format('truetype');
+        font-weight: $weight;
+        font-style: $style;
+    }
+}
+
+@mixin font-pair($family) {
+    @include font('#{$family}', 'Regular', normal, normal);
+    @include font('#{$family}', 'Italic', normal, italic);
+    @include font('#{$family}', 'SemiBold', bold, normal);
+    @include font('#{$family}', 'SemiBoldItalic', bold, italic);
+}
+
+@include font-pair('AngsanaNew');
+@include font-pair('Prompt');
+@include font-pair('THSarabunIT๙');
+@include font-pair('THSarabunNew');
+@include font-pair('Roboto');
+@include font-pair('Open_Sans');
+@include font-pair('Source_Sans_Pro');
+@include font-pair('Raleway');
+@include font-pair('Noto_Serif');
+@include font-pair('Arvo');
+@include font-pair('Prompt_Italic');
+@include font-pair('Kanit');
+
+.o_web_client {
+    font-family: "Kanit", "Odoo Unicode Support Noto", "Lucida Grande", Helvetica, Verdana, Arial, sans-serif;
+}

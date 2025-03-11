@@ -1,0 +1,65 @@
+name: Deploy - Production
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SSH client
+        run: sudo apt-get install -y openssh-client
+
+      - name: Setup SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.PRODUCTION_SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Update Code, Determine Modules, and Restart Docker
+        env:
+          SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+        run: |
+          ssh $SSH_USER@$SSH_HOST << 'EOF'
+            # Function to get changed modules
+            get_changed_modules() {
+              local before=$1
+              local after=$2
+              sudo git diff --name-only $before..$after | grep -oP '^(addons)/\K[^/]+' | sort -u | tr '\n' ',' | sed 's/,$//'
+            }
+
+            # Update /mnt/wine
+            cd /mnt/wine
+            sudo git fetch origin
+            BEFORE_WINE=$(sudo git rev-parse HEAD)
+            sudo git reset --hard
+            sudo git pull origin
+            sudo chmod +x update_odoo.sh
+            AFTER_ICS=$(sudo git rev-parse HEAD)
+
+            # Get changed modules for /mnt/wine
+            MODULES_WINE=$(get_changed_modules $BEFORE_WINE $AFTER_WINE)
+            echo "Changed modules in /mnt/wine: $MODULES_WINE"
+
+            # If no changes, check one commit further back
+            if [ -z "$MODULES_WINE" ]; then
+              echo "No changes detected in the last pull, checking one commit further..."
+              BEFORE_WINE=$(sudo git rev-parse HEAD~1)
+              MODULES_WINE=$(get_changed_modules $BEFORE_WINE $AFTER_WINE)
+              echo "Changed modules in /mnt/wine (including previous commit): $MODULES_WINE"
+            fi
+
+            # Use Wine modules only
+            MODULES=$MODULES_WINE
+            echo "All changed modules: $MODULES"
+
+            # Run update script only if there are changes
+            DB_PASSWORD="${{ secrets.PRODUCTION_DB_PASS }}" MODULES="$MODULES" ./update_odoo.sh
+          EOF

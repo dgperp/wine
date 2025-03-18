@@ -3,7 +3,6 @@
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
-from odoo.tools.translate import html_translate
 
 
 class ProductAttribute(models.Model):

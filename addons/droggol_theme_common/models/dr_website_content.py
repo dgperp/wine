@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2019-Present Droggol Infotech Private Limited. (<https://www.droggol.com/>)
 
-from odoo import api, fields, models
+from odoo import fields, models
 from odoo.tools.translate import html_translate
 
 

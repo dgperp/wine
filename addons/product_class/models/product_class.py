@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields, api
+from odoo import models, fields
 
 
 class ProductBrand(models.Model):
@@ -33,4 +33,3 @@ class SubClassProduct(models.Model):
     _sql_constraints = [
         ('name_uniq', 'unique (name)', "Sub-Class name already exists !"),
     ]
-

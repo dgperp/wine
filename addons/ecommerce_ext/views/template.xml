@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="custom_product_description" inherit_id="website_sale.product" name="Product View Description">
+        <xpath expr="//div[@id='product_details']/p[@t-field='product.description_sale']" position="replace">
+            <p t-field="product.description_ecommerce" class="text-muted my-2" placeholder="A short description that will also appear on documents." />
+        </xpath>
+    </template>
+
+    <template id="one_hybrid_search_result" inherit_id="website.one_hybrid" name="hybrid qty available">
+        <xpath expr="//div[hasclass('media-body')]/following-sibling::div[hasclass('flex-shrink-0')]" position="before">
+            <div class="custom-product-info" name="qty_available">
+                <span t-esc="result.get('website_id')"/>
+                <span t-esc="result.get('product_template_obj')"/>
+                <span class="badge badge-info">
+                    Only <t t-attf-style="{'color'}" t-esc="result.get('free_qty')"/> <t t-esc="result.get('base_unit_name')"/> left in stock.
+                </span>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

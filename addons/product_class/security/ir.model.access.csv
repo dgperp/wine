@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_class_purchase_manager,product.brand purchase_manager,model_product_class,purchase.group_purchase_manager,1,1,1,1
+access_product_class_sale_manager,product.brand salemanager,model_product_class,sales_team.group_sale_manager,1,1,1,1
+access_product_class_stock_manager,product.brand stock_manager,model_product_class,stock.group_stock_manager,1,1,1,1
+access_product_class,product.brand,model_product_class,,1,0,0,0
+access_product_class_manager,product.brand.manager,model_product_class,base.group_system,1,1,1,1
+
+access_product_sub_class_purchase_manager,product.brand purchase_manager,model_product_sub_class,purchase.group_purchase_manager,1,1,1,1
+access_product_sub_class_sale_manager,product.brand salemanager,model_product_sub_class,sales_team.group_sale_manager,1,1,1,1
+access_product_sub_class_stock_manager,product.brand stock_manager,model_product_sub_class,stock.group_stock_manager,1,1,1,1
+access_product_sub_class,product.brand,model_product_sub_class,,1,0,0,0
+access_product_sub_class_manager,product.brand.manager,model_product_sub_class,base.group_system,1,1,1,1

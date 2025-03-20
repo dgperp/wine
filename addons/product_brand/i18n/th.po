@@ -1,0 +1,135 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* product_brand
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-06-18 17:11+0000\n"
+"PO-Revision-Date: 2022-06-18 17:11+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: product_brand
+#: model_terms:ir.ui.view,arch_db:product_brand.product_brand_view
+msgid "Avatar"
+msgstr "สัญลักษณ์"
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_product__brand_id
+#: model:ir.model.fields,field_description:product_brand.field_product_template__brand_id
+#: model:ir.model.fields,field_description:product_brand.field_purchase_report__brand_id
+#: model:ir.model.fields,field_description:product_brand.field_sale_report__brand_id
+#: model:ir.model.fields,field_description:product_brand.field_stock_quant__brand_id
+#: model_terms:ir.ui.view,arch_db:product_brand.brand_group_by
+#: model_terms:ir.ui.view,arch_db:product_brand.view_order_product_search_inherit
+#: model_terms:ir.ui.view,arch_db:product_brand.view_purchase_order_search_inherit
+msgid "Brand"
+msgstr "แบรนด์"
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand__brand_image
+msgid "Brand Image"
+msgstr "ภาพ"
+
+#. module: product_brand
+#: model_terms:ir.ui.view,arch_db:product_brand.product_brand_view
+msgid "Brand Name"
+msgstr "ชื่อแบรนด์"
+
+#. module: product_brand
+#: model:ir.model.constraint,message:product_brand.constraint_product_brand_name_uniq
+msgid "Brand name already exists !"
+msgstr "มีแบรนด์เนมอยู่แล้ว !"
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand__id
+msgid "ID"
+msgstr ""
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand____last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand__member_ids
+msgid "Member"
+msgstr ""
+
+#. module: product_brand
+#: model:ir.model.fields,field_description:product_brand.field_product_brand__name
+msgid "Name"
+msgstr "ชื่อ"
+
+#. module: product_brand
+#: model:ir.actions.act_window,name:product_brand.product_brand_action
+msgid "Product Brand"
+msgstr "แบรนด์สินค้า"
+
+#. module: product_brand
+#: model:ir.ui.menu,name:product_brand.brand_product_sale
+#: model:ir.ui.menu,name:product_brand.product_brand_inventory
+#: model:ir.ui.menu,name:product_brand.product_brand_purchase
+msgid "Product Brands"
+msgstr "แบรนด์สินค้า"
+
+#. module: product_brand
+#: model:ir.model,name:product_brand.model_product_template
+msgid "Product Template"
+msgstr "สินค้า"
+
+#. module: product_brand
+#: model_terms:ir.ui.view,arch_db:product_brand.product_brand_view
+msgid "Products"
+msgstr "สินค้า"
+
+#. module: product_brand
+#: model:ir.model,name:product_brand.model_purchase_report
+msgid "Purchase Report"
+msgstr ""
+
+#. module: product_brand
+#: model:ir.model,name:product_brand.model_stock_quant
+msgid "Quants"
+msgstr "วิเคราะห์ปริมาณ"
+
+#. module: product_brand
+#: model:ir.model,name:product_brand.model_sale_report
+msgid "Sales Analysis Report"
+msgstr "รายงานวิเคราะห์การขาย"
+
+#. module: product_brand
+#: model:ir.model,name:product_brand.model_product_brand
+msgid "product.brand"
+msgstr ""
